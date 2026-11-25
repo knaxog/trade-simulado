@@ -18,9 +18,9 @@
       "taxaEntrada": 0.5,
       "motivo": "Tendencia de baixa em 15m/1h/4h (EMA20<EMA50 em todos), ETH caiu de 1845 para ~1640 no 4h. Alvo -10% (dobra a margem a 10x). Invalida se voltar acima da maxima de 24h (1706).",
       "abertoEm": "2026-11-25T13:39:47.427Z",
-      "ultimoCheck": 1795633620000
+      "ultimoCheck": 1795635780000
     }
   ],
   "fechadas": [],
-  "salvoEm": 1795633677790
+  "salvoEm": 1795635784038
 }
