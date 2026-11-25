@@ -19,7 +19,8 @@ const API = 'https://data-api.binance.vision/api/v3';
 const SALDO_INICIAL = 1000;          // R$ fictícios
 const TAXA = 0.0005;                 // 0,05% do nocional em cada ponta (taxa taker de futuros)
 const LIQ = 0.9;                     // liquidação quando a perda chega a 90% da margem
-const REGRAS = { margemMin: 50, margemMax: 100, alavMax: 20, maxAbertas: 3, maxPorDia: 5 };
+// Formato híbrido (desde 25/11): alvo ~+50% da margem, stop até −30%, fecha sozinha após 12 h.
+const REGRAS = { margemMin: 50, margemMax: 100, alavMax: 20, maxAbertas: 3, maxPorDia: 10, prazoH: 12, perdaMaxStop: 0.30 };
 const PARES = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'BNBUSDT'];
 
 // ---------- utilidades ----------
@@ -123,11 +124,14 @@ function fecharPosicao(e, p, px, motivo) {
 
 // Repassa as velas de 1 minuto desde a última checagem: pega até pavio que o monitor não viu.
 // Se stop e alvo caem na mesma vela, conta o stop (conservador).
+// Posições com prazo fecham na abertura da primeira vela depois do prazo.
 async function checarPosicao(e, p) {
   let inicio = p.ultimoCheck ?? Date.parse(p.abertoEm);
+  const limite = p.prazoH ? Date.parse(p.abertoEm) + p.prazoH * 3600_000 : Infinity;
   for (;;) {
     const vs = await getJSON(`${API}/klines?symbol=${p.par}&interval=1m&startTime=${inicio}&limit=1000`);
     for (const v of vs) {
+      if (v[0] >= limite) return fecharPosicao(e, p, +v[1], `prazo de ${p.prazoH}h`);
       const alta = +v[2], baixa = +v[3];
       const bateuStop = p.lado === 'long' ? baixa <= p.stop : alta >= p.stop;
       const bateuAlvo = p.lado === 'long' ? alta >= p.alvo : baixa <= p.alvo;
@@ -232,8 +236,10 @@ const cmds = {
       if (lado === 'long' ? stop <= liq : stop >= liq) throw new Error(`Stop além da liquidação (${fp(liq)}). Aproxime o stop ou baixe a alavancagem.`);
       const taxaEntrada = margem * alav * TAXA;
       if (e.saldo < margem + taxaEntrada) throw new Error(`Saldo livre insuficiente: ${brl(e.saldo)}.`);
+      const perdaStop = -(margem * alav * (lado === 'long' ? 1 : -1) * (stop / entrada - 1)) / margem;
+      if (perdaStop > REGRAS.perdaMaxStop) throw new Error(`Stop perderia ${pct(-perdaStop)} da margem; o máximo é ${pct(-REGRAS.perdaMaxStop)}. Aproxime o stop ou baixe a alavancagem.`);
 
-      const p = { id: e.proximoId++, par, lado, margem, alav, entrada, alvo, stop, liq, taxaEntrada, motivo, abertoEm: new Date().toISOString() };
+      const p = { id: e.proximoId++, par, lado, margem, alav, entrada, alvo, stop, liq, taxaEntrada, motivo, abertoEm: new Date().toISOString(), prazoH: REGRAS.prazoH };
       e.saldo -= margem + taxaEntrada;
       e.abertas.push(p);
       salvar(e);
@@ -241,7 +247,7 @@ const cmds = {
       anotar(`- **${agora()} · ABRIU #${p.id}** ${par} ${lado.toUpperCase()} ${alav}x, margem ${brl(margem)}, entrada ${fp(entrada)}, alvo ${fp(alvo)} (${brl(ganho)}), stop ${fp(stop)} (${brl(perda)}). Motivo: ${motivo}`);
       avisar(`ABRIU #${p.id}: ${par} ${lado.toUpperCase()} ${alav}x`,
         `Entrada ${fp(entrada)} · alvo ${fp(alvo)} · stop ${fp(stop)} · margem ${brl(margem)}. Simulação, não é recomendação.`);
-      console.log(`Aberta #${p.id} ${par} ${lado} ${alav}x em ${fp(entrada)}. Se bater o alvo: ${brl(ganho)} (${pct(ganho / margem)}); se bater o stop: ${brl(perda)} (${pct(perda / margem)}). Liquidação em ${fp(liq)}.`);
+      console.log(`Aberta #${p.id} ${par} ${lado} ${alav}x em ${fp(entrada)}. Se bater o alvo: ${brl(ganho)} (${pct(ganho / margem)}); se bater o stop: ${brl(perda)} (${pct(perda / margem)}). Liquidação em ${fp(liq)}. Fecha sozinha em ${p.prazoH}h se nada bater.`);
     });
   },
 
@@ -359,7 +365,8 @@ const AJUDA = `Corretora fictícia (preços reais da Binance, dinheiro de mentir
   relatorio                                 balanço e comparação com BTC
   monitor                                   fica rodando e fecha no stop/alvo
   painel                                    abre o painel em http://localhost:${PORTA}
-Regras: margem R$ ${REGRAS.margemMin}–${REGRAS.margemMax}, alavancagem até ${REGRAS.alavMax}x, até ${REGRAS.maxAbertas} abertas, ${REGRAS.maxPorDia} por dia.
+Regras: margem R$ ${REGRAS.margemMin}–${REGRAS.margemMax}, alavancagem até ${REGRAS.alavMax}x, stop de no máximo ${pct(-REGRAS.perdaMaxStop)} da margem,
+até ${REGRAS.maxAbertas} abertas, ${REGRAS.maxPorDia} por dia, cada uma fecha sozinha após ${REGRAS.prazoH}h.
 Pares: ${PARES.join(', ')}`;
 
 const [cmd, ...resto] = process.argv.slice(2);

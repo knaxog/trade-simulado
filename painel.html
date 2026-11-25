@@ -137,7 +137,7 @@ function kpis(d) {
     ['Resultado', `<span class="${cls(ret)}">${seta(ret)}${pct(ret)}</span>`, `${brl(d.patrimonio - d.saldoInicial)}`],
     ['BTC no mesmo período', `<span class="${cls(btc)}">${seta(btc)}${pct(btc)}</span>`, ret > btc ? 'Claude está na frente' : 'Claude está atrás'],
     ['Acertos', fech.length ? `${ac} de ${fech.length}` : '—', fech.length ? `${Math.round(ac / fech.length * 100)}% das fechadas` : 'nenhuma fechada ainda'],
-    ['Dobraram a margem', String(dobrou), 'operações que bateram ~+100%'],
+    ['Bateram o alvo', String(fech.filter((f) => f.motivoSaida === 'alvo').length), `${dobrou} dobraram a margem`],
     ['Operações hoje', `${d.hojeQtd} / ${d.regras.maxPorDia}`, `${d.abertas.length} de ${d.regras.maxAbertas} abertas agora`],
   ];
   document.getElementById('kpis').innerHTML = items.map(([l, v, s]) =>
@@ -160,7 +160,7 @@ function abertas(d) {
         <div class="entry" style="left:calc(${fEntry * 100}% - 1px)"></div><div class="now" style="left:${fNow * 100}%"></div>
       </div>
       <div class="ends"><span>stop ${fp(p.stop)}</span><span>entrada ${fp(p.entrada)} · agora ${fp(p.agora)}</span><span>alvo ${fp(p.alvo)}</span></div>
-      <div class="motivo">${esc(p.motivo)}</div>
+      <div class="motivo">${p.prazoH ? `Fecha sozinha às ${dt(Date.parse(p.abertoEm) + p.prazoH * 3600e3)} se nada bater. ` : ''}${esc(p.motivo)}</div>
     </div>`;
   }).join('');
 }
@@ -262,7 +262,7 @@ async function obterDados() {
   return {
     agora: Date.now(), salvoEm: e.salvoEm, saldoInicial: e.saldoInicial, saldo: e.saldo, criadoEm: e.criadoEm,
     btcInicial: e.btcInicial, btc: px.BTCUSDT, patrimonio: e.saldo + abertas.reduce((s, p) => s + p.margem + p.pnl, 0),
-    abertas, fechadas: e.fechadas, diario: diarioTxt, regras: { maxPorDia: 5, maxAbertas: 3 },
+    abertas, fechadas: e.fechadas, diario: diarioTxt, regras: { maxPorDia: 10, maxAbertas: 3 },
     historico: hist.split('\n').filter(Boolean).map((l) => JSON.parse(l)),
     hojeQtd: [...e.abertas, ...e.fechadas].filter((p) => new Date(p.abertoEm).toLocaleDateString('pt-BR') === hoje).length,
   };
