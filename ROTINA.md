@@ -1,0 +1,32 @@
+# Rotina de cada rodada (Claude operando a corretora fictícia)
+
+Tudo aqui é simulação: preços reais da Binance (API pública, sem chave), dinheiro de mentira.
+Nenhuma ordem real é enviada a lugar nenhum. Não acesse corretoras reais nem use chaves de API.
+
+O repositório é a fonte da verdade (`estado.json`, `historico.jsonl`, `diario.md`).
+Um monitor no GitHub Actions confere stop/alvo a cada ~10 min e também grava nesses arquivos.
+
+## Estilo pedido pelo usuário: agressivo
+- Margem de R$ 50 a R$ 100 por operação, alavancagem de até 20x.
+- Objetivo de cada operação: **dobrar a margem** (alvo ≈ +100% da margem).
+- Stop entre −30% e −50% da margem. Nunca abrir sem stop.
+- Conta: o alvo em preço é `entrada × (1 ± 1/alav)` para dobrar. Ex.: 10x precisa de 10% de movimento; 20x precisa de 5%.
+- Escolha a alavancagem pelo ATR: o alvo tem que ser um movimento plausível em horas/poucos dias, e o stop tem que ficar fora do ruído normal (pelo menos ~1 ATR de 1h longe da entrada).
+- Ficar de fora é uma decisão válida. Só entre quando houver um motivo claro (tendência, rompimento, exaustão com RSI extremo, etc.).
+- Não concentre a mesma aposta em pares que andam juntos.
+
+## Passos
+1. `git pull --rebase origin main`
+2. `node corretora.mjs status` (isso também fecha o que bateu stop/alvo desde a última checagem).
+3. `node corretora.mjs precos` e `node corretora.mjs analise` (todos os pares) ou `analise BTC SOL` etc.
+4. Decida: abrir, fechar alguma aberta (`fechar ID --motivo "..."`) ou não fazer nada.
+5. Para abrir: `node corretora.mjs abrir PAR long|short MARGEM ALAV --alvo P --stop P --motivo "tese em uma frase + o que invalida"`.
+6. Acrescente ao fim do `diario.md` uma linha `- <dd/mm/aaaa hh:mm, horário de Brasília> · rodada: <o que viu e o que decidiu>` (inclusive quando não fizer nada).
+7. Grave e envie direto na `main` (sem branch, sem pull request):
+   `git add estado.json historico.jsonl diario.md && git commit -m "rodada <data hora>" && git push origin HEAD:main`
+8. Se o push for recusado porque o monitor gravou antes: `git fetch origin main && git reset --hard origin/main`,
+   rode de novo os mesmos comandos de abrir/fechar que você decidiu (com o preço novo), refaça a linha do diário e envie de novo.
+
+A corretora aplica sozinha as regras: até 3 abertas, até 5 operações por dia, stop antes da liquidação.
+
+O teste vai até 02/12/2026. A partir dessa data: só rode `node corretora.mjs relatorio`, registre no diário que o teste acabou e não abra operações novas.

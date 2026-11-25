@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Trade Simulado</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f3f0; --surface: #fcfcfb; --border: #e3e1dc; --grid: #ebe9e4;
+    --text: #0b0b0b; --text-2: #52514e; --muted: #7d7c77;
+    --s1: #2a78d6; --s2: #eb6834;
+    --good: #006300; --bad: #c22f2f; --track: #ebe9e4;
+    --good-bar: #0ca30c; --bad-bar: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --bg: #111110; --surface: #1a1a19; --border: #2e2e2c; --grid: #262624;
+      --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e88;
+      --s1: #3987e5; --s2: #d95926;
+      --good: #3cc23c; --bad: #ef7070; --track: #2e2e2c;
+      --good-bar: #0ca30c; --bad-bar: #d03b3b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #111110; --surface: #1a1a19; --border: #2e2e2c; --grid: #262624;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e88;
+    --s1: #3987e5; --s2: #d95926;
+    --good: #3cc23c; --bad: #ef7070; --track: #2e2e2c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 20px; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+  .tag { font-size: 12px; color: var(--text-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; margin-left: 8px; vertical-align: 2px; }
+  .upd { color: var(--muted); font-size: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, 1fr); } .kpi .val { font-size: 20px; } }
+  .kpi .lbl { color: var(--text-2); font-size: 12px; }
+  .kpi .val { font-size: 24px; font-weight: 650; letter-spacing: -0.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .good { color: var(--good); } .bad { color: var(--bad); }
+  .grid2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-2); margin: -4px 0 8px; }
+  .legend i { display: inline-block; width: 14px; height: 2px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  #chart { position: relative; height: 260px; }
+  #chart svg { display: block; width: 100%; height: 100%; }
+  .tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); white-space: nowrap; display: none; }
+  .tip b { font-variant-numeric: tabular-nums; }
+  .tip .k { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 6px; }
+  .empty { color: var(--muted); font-size: 13px; padding: 12px 0; }
+  .pos { border-top: 1px solid var(--border); padding: 12px 0; }
+  .pos:first-of-type { border-top: 0; padding-top: 0; }
+  .pos .top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .pos .nome { font-weight: 600; }
+  .pill { font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-left: 6px; border: 1px solid var(--border); color: var(--text-2); }
+  .pos .pnl { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .bar { position: relative; height: 8px; border-radius: 4px; background: var(--track); margin: 14px 0 6px; overflow: visible; }
+  .bar .loss { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px 0 0 4px; background: var(--bad-bar); opacity: .28; }
+  .bar .gain { position: absolute; right: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; background: var(--good-bar); opacity: .28; }
+  .bar .entry { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text-2); }
+  .bar .now { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; transform: translate(-50%, -50%);
+    background: var(--text); border: 2px solid var(--surface); }
+  .ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .motivo { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 600; color: var(--text-2); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  td.r, th.r { text-align: right; }
+  .scroll { overflow-x: auto; }
+  .diario li { margin: 0 0 10px; color: var(--text-2); font-size: 13px; }
+  .diario li b { color: var(--text); }
+  .diario ul { padding-left: 18px; margin: 0; max-height: 420px; overflow-y: auto; }
+  .aviso { font-size: 12px; color: var(--muted); margin-top: 20px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Trade simulado <span class="tag">dinheiro fictício · preços reais</span></h1>
+    <span class="upd" id="upd">carregando…</span>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>Resultado no período</h2>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Claude (patrimônio)</span><span><i style="background:var(--s2)"></i>Comprar BTC e segurar</span></div>
+      <div id="chart"><div class="tip" id="tip"></div></div>
+    </div>
+    <div class="card">
+      <h2>Posições abertas</h2>
+      <div id="abertas"></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Operações fechadas</h2>
+    <div class="scroll" id="fechadas"></div>
+  </section>
+
+  <section class="card diario">
+    <h2>Diário de decisões</h2>
+    <div id="diario"></div>
+  </section>
+
+  <p class="aviso">Simulação para teste. Nada aqui é recomendação de investimento.</p>
+</div>
+
+<script>
+const brl = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const pct = (v, d = 1) => (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(d).replace('.', ',') + '%';
+const fp = (n) => (n >= 100 ? n.toFixed(2) : n >= 1 ? n.toFixed(4) : n.toFixed(6));
+const cls = (v) => (v >= 0 ? 'good' : 'bad');
+const seta = (v) => (v >= 0 ? '▲ ' : '▼ ');
+const dt = (t) => new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let dados = null;
+
+function kpis(d) {
+  const ret = d.patrimonio / d.saldoInicial - 1;
+  const btc = d.btc / d.btcInicial - 1;
+  const fech = d.fechadas, ac = fech.filter((f) => f.resultado > 0).length;
+  const dobrou = fech.filter((f) => f.retornoMargem >= 0.95).length;
+  const items = [
+    ['Patrimônio', brl(d.patrimonio), `começou com ${brl(d.saldoInicial)}`],
+    ['Resultado', `<span class="${cls(ret)}">${seta(ret)}${pct(ret)}</span>`, `${brl(d.patrimonio - d.saldoInicial)}`],
+    ['BTC no mesmo período', `<span class="${cls(btc)}">${seta(btc)}${pct(btc)}</span>`, ret > btc ? 'Claude está na frente' : 'Claude está atrás'],
+    ['Acertos', fech.length ? `${ac} de ${fech.length}` : '—', fech.length ? `${Math.round(ac / fech.length * 100)}% das fechadas` : 'nenhuma fechada ainda'],
+    ['Dobraram a margem', String(dobrou), 'operações que bateram ~+100%'],
+    ['Operações hoje', `${d.hojeQtd} / ${d.regras.maxPorDia}`, `${d.abertas.length} de ${d.regras.maxAbertas} abertas agora`],
+  ];
+  document.getElementById('kpis').innerHTML = items.map(([l, v, s]) =>
+    `<div class="card kpi"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`).join('');
+}
+
+function abertas(d) {
+  const el = document.getElementById('abertas');
+  if (!d.abertas.length) { el.innerHTML = '<div class="empty">Nenhuma posição aberta agora.</div>'; return; }
+  el.innerHTML = d.abertas.map((p) => {
+    const span = p.alvo - p.stop;
+    const fEntry = Math.min(1, Math.max(0, (p.entrada - p.stop) / span));
+    const fNow = Math.min(1, Math.max(0, (p.agora - p.stop) / span));
+    const r = p.pnl / p.margem;
+    return `<div class="pos">
+      <div class="top"><span><span class="nome">#${p.id} ${p.par.replace('USDT', '')}</span><span class="pill">${p.lado === 'long' ? 'COMPRA' : 'VENDA'} ${p.alav}x</span><span class="pill">${brl(p.margem)}</span></span>
+      <span class="pnl ${cls(p.pnl)}">${seta(p.pnl)}${brl(p.pnl)} (${pct(r)})</span></div>
+      <div class="bar" title="Stop ← entrada → alvo">
+        <div class="loss" style="width:${fEntry * 100}%"></div><div class="gain" style="width:${(1 - fEntry) * 100}%"></div>
+        <div class="entry" style="left:calc(${fEntry * 100}% - 1px)"></div><div class="now" style="left:${fNow * 100}%"></div>
+      </div>
+      <div class="ends"><span>stop ${fp(p.stop)}</span><span>entrada ${fp(p.entrada)} · agora ${fp(p.agora)}</span><span>alvo ${fp(p.alvo)}</span></div>
+      <div class="motivo">${esc(p.motivo)}</div>
+    </div>`;
+  }).join('');
+}
+
+function fechadas(d) {
+  const el = document.getElementById('fechadas');
+  if (!d.fechadas.length) { el.innerHTML = '<div class="empty">Nenhuma operação fechada ainda.</div>'; return; }
+  const linhas = [...d.fechadas].reverse().map((f) => `<tr>
+    <td>#${f.id}</td><td>${f.par.replace('USDT', '')}</td><td>${f.lado === 'long' ? 'Compra' : 'Venda'} ${f.alav}x</td>
+    <td class="r">${brl(f.margem)}</td><td class="r">${fp(f.entrada)}</td><td class="r">${fp(f.saida)}</td>
+    <td>${esc(f.motivoSaida)}</td><td>${dt(f.abertoEm)} → ${dt(f.fechadoEm)}</td>
+    <td class="r ${cls(f.resultado)}">${seta(f.resultado)}${brl(f.resultado)}</td><td class="r ${cls(f.resultado)}">${pct(f.retornoMargem)}</td></tr>`).join('');
+  el.innerHTML = `<table><thead><tr><th>#</th><th>Par</th><th>Tipo</th><th class="r">Margem</th><th class="r">Entrada</th><th class="r">Saída</th><th>Saída por</th><th>Período</th><th class="r">Resultado</th><th class="r">Na margem</th></tr></thead><tbody>${linhas}</tbody></table>`;
+}
+
+function diario(d) {
+  const itens = d.diario.split('\n').filter((l) => l.startsWith('- ')).map((l) => l.slice(2)).reverse().slice(0, 40);
+  document.getElementById('diario').innerHTML = itens.length
+    ? '<ul>' + itens.map((l) => '<li>' + esc(l).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') + '</li>').join('') + '</ul>'
+    : '<div class="empty">Sem registros ainda.</div>';
+}
+
+function serie(d) {
+  const pts = [{ t: Date.parse(d.criadoEm), patrimonio: d.saldoInicial, btc: d.btcInicial }, ...d.historico, { t: d.agora, patrimonio: d.patrimonio, btc: d.btc }];
+  return pts.sort((a, b) => a.t - b.t).map((p) => ({ t: p.t, c: p.patrimonio / d.saldoInicial - 1, b: p.btc / d.btcInicial - 1 }));
+}
+
+function grafico(d) {
+  const box = document.getElementById('chart');
+  const W = box.clientWidth, H = box.clientHeight, m = { l: 48, r: 12, t: 10, b: 24 };
+  const pts = serie(d);
+  const t0 = pts[0].t, t1 = Math.max(pts.at(-1).t, t0 + 60e3);
+  let lo = Math.min(0, ...pts.map((p) => Math.min(p.c, p.b))), hi = Math.max(0, ...pts.map((p) => Math.max(p.c, p.b)));
+  const pad = Math.max((hi - lo) * 0.12, 0.005); lo -= pad; hi += pad;
+  const x = (t) => m.l + (t - t0) / (t1 - t0) * (W - m.l - m.r);
+  const y = (v) => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+  const passo = [0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1].find((s) => (hi - lo) / s <= 5) || 1;
+  let grid = '';
+  for (let v = Math.ceil(lo / passo) * passo; v <= hi; v += passo) {
+    const yy = y(v).toFixed(1), zero = Math.abs(v) < 1e-9;
+    grid += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" stroke="var(${zero ? '--muted' : '--grid'})" stroke-width="1"/>
+      <text x="${m.l - 8}" y="${yy}" dy="0.32em" text-anchor="end" font-size="11" fill="var(--muted)">${pct(v, passo < 0.01 ? 1 : 0)}</text>`;
+  }
+  const ticks = 4; let xt = '';
+  for (let i = 0; i <= ticks; i++) {
+    const t = t0 + (t1 - t0) * i / ticks;
+    xt += `<text x="${x(t)}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="${i === 0 ? 'start' : i === ticks ? 'end' : 'middle'}">${dt(t)}</text>`;
+  }
+  const linha = (k) => pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p[k]).toFixed(1)}`).join('');
+  const ult = pts.at(-1);
+  box.querySelector('svg')?.remove();
+  box.insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Resultado percentual do Claude contra comprar BTC e segurar">
+    ${grid}${xt}
+    <path d="${linha('b')}" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${linha('c')}" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${x(ult.t)}" cy="${y(ult.b)}" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>
+    <circle cx="${x(ult.t)}" cy="${y(ult.c)}" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/>
+    <line id="cross" y1="${m.t}" y2="${H - m.b}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/>
+    <circle id="hc" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
+    <circle id="hb" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
+    <rect id="hit" x="${m.l}" y="0" width="${W - m.l - m.r}" height="${H}" fill="transparent"/>
+  </svg>`);
+  const svg = box.querySelector('svg'), tip = document.getElementById('tip');
+  const sh = (id, on) => svg.getElementById(id).setAttribute('visibility', on ? 'visible' : 'hidden');
+  svg.getElementById('hit').addEventListener('mousemove', (ev) => {
+    const r = svg.getBoundingClientRect(), mx = (ev.clientX - r.left) * W / r.width;
+    let best = pts[0];
+    for (const p of pts) if (Math.abs(x(p.t) - mx) < Math.abs(x(best.t) - mx)) best = p;
+    const cx = x(best.t);
+    const cr = svg.getElementById('cross'); cr.setAttribute('x1', cx); cr.setAttribute('x2', cx);
+    svg.getElementById('hc').setAttribute('cx', cx); svg.getElementById('hc').setAttribute('cy', y(best.c));
+    svg.getElementById('hb').setAttribute('cx', cx); svg.getElementById('hb').setAttribute('cy', y(best.b));
+    ['cross', 'hc', 'hb'].forEach((id) => sh(id, true));
+    tip.innerHTML = `${dt(best.t)}<br><span class="k" style="background:var(--s1)"></span>Claude <b>${pct(best.c, 2)}</b><br><span class="k" style="background:var(--s2)"></span>BTC <b>${pct(best.b, 2)}</b>`;
+    tip.style.display = 'block';
+    const left = cx / W * box.clientWidth;
+    tip.style.left = (left > box.clientWidth / 2 ? left - tip.offsetWidth - 12 : left + 12) + 'px';
+    tip.style.top = '8px';
+  });
+  svg.getElementById('hit').addEventListener('mouseleave', () => { ['cross', 'hc', 'hb'].forEach((id) => sh(id, false)); tip.style.display = 'none'; });
+}
+
+// Local (node corretora.mjs painel): pede tudo pronto em /api.
+// Online (GitHub Pages em usuario.github.io/repo): lê os arquivos do repositório e o preço direto da Binance.
+async function obterDados() {
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return (await fetch('/api')).json();
+  const usuario = location.hostname.split('.')[0], repo = location.pathname.split('/')[1];
+  const base = `https://raw.githubusercontent.com/${usuario}/${repo}/main/`, q = '?t=' + Date.now();
+  const [e, hist, diarioTxt] = await Promise.all([
+    fetch(base + 'estado.json' + q).then((r) => r.json()),
+    fetch(base + 'historico.jsonl' + q).then((r) => (r.ok ? r.text() : '')),
+    fetch(base + 'diario.md' + q).then((r) => (r.ok ? r.text() : '')),
+  ]);
+  const pares = [...new Set([...e.abertas.map((p) => p.par), 'BTCUSDT'])];
+  const t = await fetch('https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(pares))).then((r) => r.json());
+  const px = Object.fromEntries(t.map((x) => [x.symbol, +x.price]));
+  const abertas = e.abertas.map((p) => ({ ...p, agora: px[p.par], pnl: p.margem * p.alav * (p.lado === 'long' ? 1 : -1) * (px[p.par] / p.entrada - 1) }));
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  return {
+    agora: Date.now(), salvoEm: e.salvoEm, saldoInicial: e.saldoInicial, saldo: e.saldo, criadoEm: e.criadoEm,
+    btcInicial: e.btcInicial, btc: px.BTCUSDT, patrimonio: e.saldo + abertas.reduce((s, p) => s + p.margem + p.pnl, 0),
+    abertas, fechadas: e.fechadas, diario: diarioTxt, regras: { maxPorDia: 5, maxAbertas: 3 },
+    historico: hist.split('\n').filter(Boolean).map((l) => JSON.parse(l)),
+    hojeQtd: [...e.abertas, ...e.fechadas].filter((p) => new Date(p.abertoEm).toLocaleDateString('pt-BR') === hoje).length,
+  };
+}
+
+async function atualizar() {
+  try {
+    const d = await obterDados();
+    if (d.erro) throw new Error(d.erro);
+    dados = d;
+    kpis(d); abertas(d); fechadas(d); diario(d); grafico(d);
+    document.getElementById('upd').textContent = 'preços de ' + new Date(d.agora).toLocaleTimeString('pt-BR')
+      + (d.salvoEm ? ' · monitor conferiu stop/alvo às ' + new Date(d.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+  } catch (e) {
+    document.getElementById('upd').textContent = 'sem conexão com a corretora (' + e.message + ')';
+  }
+}
+atualizar();
+setInterval(atualizar, 15000);
+addEventListener('resize', () => dados && grafico(dados));
+</script>
+</body>
+</html>
