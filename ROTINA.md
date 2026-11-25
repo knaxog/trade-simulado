@@ -16,7 +16,7 @@ Um monitor no GitHub Actions confere stop/alvo a cada ~10 min e também grava ne
 - Não concentre a mesma aposta em pares que andam juntos.
 
 ## Passos
-1. `git pull --rebase origin main`
+1. `git fetch origin main && git reset --hard origin/main` (a cópia local não guarda nada próprio: o GitHub é a fonte da verdade, e consultas locais podem ter mexido no estado.json)
 2. `node corretora.mjs status` (isso também fecha o que bateu stop/alvo desde a última checagem).
 3. `node corretora.mjs precos` e `node corretora.mjs analise` (todos os pares) ou `analise BTC SOL` etc.
 4. Decida: abrir, fechar alguma aberta (`fechar ID --motivo "..."`) ou não fazer nada.
