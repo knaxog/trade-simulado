@@ -18,7 +18,8 @@
       "taxaEntrada": 0.5,
       "motivo": "Rompimento falso: BTC rejeitou a EMA50 de 4h (61.4k), perdeu a faixa 60.400-60.500 e a EMA50 de 1h com queda forte no 15m; alvo -2,5% rumo a minima de 24h. Invalida se voltar acima de 60.750 (de volta acima da faixa e das EMAs de 15m).",
       "abertoEm": "2026-11-26T15:09:03.979Z",
-      "prazoH": 12
+      "prazoH": 12,
+      "ultimoCheck": 1795707600000
     }
   ],
   "fechadas": [
@@ -64,5 +65,5 @@
       "retornoMargem": -0.06110484451783435
     }
   ],
-  "salvoEm": 1795705712911
+  "salvoEm": 1795707618229
 }
