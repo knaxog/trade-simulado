@@ -1,27 +1,10 @@
 {
   "saldoInicial": 1000,
-  "saldo": 903.9669649557719,
+  "saldo": 940.4960385360084,
   "criadoEm": "2026-11-25T13:39:06.883Z",
   "btcInicial": 58406.74,
   "proximoId": 4,
-  "abertas": [
-    {
-      "id": 3,
-      "par": "BTCUSDT",
-      "lado": "short",
-      "margem": 50,
-      "alav": 20,
-      "entrada": 59972.49,
-      "alvo": 58500,
-      "stop": 60750,
-      "liq": 62671.252049999996,
-      "taxaEntrada": 0.5,
-      "motivo": "Rompimento falso: BTC rejeitou a EMA50 de 4h (61.4k), perdeu a faixa 60.400-60.500 e a EMA50 de 1h com queda forte no 15m; alvo -2,5% rumo a minima de 24h. Invalida se voltar acima de 60.750 (de volta acima da faixa e das EMAs de 15m).",
-      "abertoEm": "2026-11-26T15:09:03.979Z",
-      "prazoH": 12,
-      "ultimoCheck": 1795707600000
-    }
-  ],
+  "abertas": [],
   "fechadas": [
     {
       "id": 1,
@@ -63,7 +46,28 @@
       "motivoSaida": "prazo de 12h",
       "resultado": -3.0552422258917176,
       "retornoMargem": -0.06110484451783435
+    },
+    {
+      "id": 3,
+      "par": "BTCUSDT",
+      "lado": "short",
+      "margem": 50,
+      "alav": 20,
+      "entrada": 59972.49,
+      "alvo": 58500,
+      "stop": 60750,
+      "liq": 62671.252049999996,
+      "taxaEntrada": 0.5,
+      "motivo": "Rompimento falso: BTC rejeitou a EMA50 de 4h (61.4k), perdeu a faixa 60.400-60.500 e a EMA50 de 1h com queda forte no 15m; alvo -2,5% rumo a minima de 24h. Invalida se voltar acima de 60.750 (de volta acima da faixa e das EMAs de 15m).",
+      "abertoEm": "2026-11-26T15:09:03.979Z",
+      "prazoH": 12,
+      "ultimoCheck": 1795708740000,
+      "saida": 60750,
+      "fechadoEm": "2026-11-26T16:08:37.895Z",
+      "motivoSaida": "stop",
+      "resultado": -13.970926419763458,
+      "retornoMargem": -0.27941852839526915
     }
   ],
-  "salvoEm": 1795707618229
+  "salvoEm": 1795709317979
 }
