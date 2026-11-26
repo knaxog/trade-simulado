@@ -18,7 +18,8 @@
       "taxaEntrada": 0.5,
       "motivo": "Rompimento da faixa 60.400-60.500 (rejeitada 3x) com volume, reteste segurou 60.457 e 15m faz fundos mais altos acima das EMAs; alvo +2,5% (~2 ATR de 1h). Invalida se perder o reteste e voltar abaixo de 60.200 (rompimento falso).",
       "abertoEm": "2026-11-26T02:17:46.646Z",
-      "prazoH": 12
+      "prazoH": 12,
+      "ultimoCheck": 1795660740000
     }
   ],
   "fechadas": [
@@ -43,5 +44,5 @@
       "retornoMargem": -0.42477792818336435
     }
   ],
-  "salvoEm": 1795659429900
+  "salvoEm": 1795660760422
 }
