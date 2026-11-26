@@ -1,10 +1,11 @@
 {
   "saldoInicial": 1000,
-  "saldo": 899.5,
+  "saldo": 957.5222071816636,
   "criadoEm": "2026-11-25T13:39:06.883Z",
   "btcInicial": 58406.74,
   "proximoId": 2,
-  "abertas": [
+  "abertas": [],
+  "fechadas": [
     {
       "id": 1,
       "par": "ETHUSDT",
@@ -18,9 +19,13 @@
       "taxaEntrada": 0.5,
       "motivo": "Tendencia de baixa em 15m/1h/4h (EMA20<EMA50 em todos), ETH caiu de 1845 para ~1640 no 4h. Alvo -10% (dobra a margem a 10x). Invalida se voltar acima da maxima de 24h (1706).",
       "abertoEm": "2026-11-25T13:39:47.427Z",
-      "ultimoCheck": 1795651860000
+      "ultimoCheck": 1795652040000,
+      "saida": 1708,
+      "fechadoEm": "2026-11-26T01:30:15.391Z",
+      "motivoSaida": "stop",
+      "resultado": -42.47779281833643,
+      "retornoMargem": -0.42477792818336435
     }
   ],
-  "fechadas": [],
-  "salvoEm": 1795651874495
+  "salvoEm": 1795656615395
 }
