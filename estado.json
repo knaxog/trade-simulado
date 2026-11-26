@@ -1,10 +1,26 @@
 {
   "saldoInicial": 1000,
-  "saldo": 957.5222071816636,
+  "saldo": 907.0222071816636,
   "criadoEm": "2026-11-25T13:39:06.883Z",
   "btcInicial": 58406.74,
-  "proximoId": 2,
-  "abertas": [],
+  "proximoId": 3,
+  "abertas": [
+    {
+      "id": 2,
+      "par": "BTCUSDT",
+      "lado": "long",
+      "margem": 50,
+      "alav": 20,
+      "entrada": 60940.43,
+      "alvo": 62450,
+      "stop": 60200,
+      "liq": 58198.110649999995,
+      "taxaEntrada": 0.5,
+      "motivo": "Rompimento da faixa 60.400-60.500 (rejeitada 3x) com volume, reteste segurou 60.457 e 15m faz fundos mais altos acima das EMAs; alvo +2,5% (~2 ATR de 1h). Invalida se perder o reteste e voltar abaixo de 60.200 (rompimento falso).",
+      "abertoEm": "2026-11-26T02:17:46.646Z",
+      "prazoH": 12
+    }
+  ],
   "fechadas": [
     {
       "id": 1,
@@ -27,5 +43,5 @@
       "retornoMargem": -0.42477792818336435
     }
   ],
-  "salvoEm": 1795656615395
+  "salvoEm": 1795659429900
 }
