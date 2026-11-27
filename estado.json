@@ -1,10 +1,26 @@
 {
   "saldoInicial": 1000,
-  "saldo": 940.4960385360084,
+  "saldo": 889.9960385360084,
   "criadoEm": "2026-11-25T13:39:06.883Z",
   "btcInicial": 58406.74,
-  "proximoId": 4,
-  "abertas": [],
+  "proximoId": 5,
+  "abertas": [
+    {
+      "id": 4,
+      "par": "SOLUSDT",
+      "lado": "long",
+      "margem": 50,
+      "alav": 20,
+      "entrada": 73.22,
+      "alvo": 75.08,
+      "stop": 72.33,
+      "liq": 69.9251,
+      "taxaEntrada": 0.5,
+      "motivo": "Forca relativa: SOL e o par mais forte (+3,2% em 24h), acima das EMAs 20/50 no 15m, 1h e 4h, segurando 73,2 enquanto o BTC recua para a EMA50 de 4h; alvo +2,5% passando o topo de 73,93. Invalida se perder 72,33 (abaixo da EMA50 de 15m e da minima das ultimas 20 velas de 15m em 72,89).",
+      "abertoEm": "2026-11-27T13:29:37.022Z",
+      "prazoH": 12
+    }
+  ],
   "fechadas": [
     {
       "id": 1,
@@ -69,5 +85,5 @@
       "retornoMargem": -0.27941852839526915
     }
   ],
-  "salvoEm": 1795782968009
+  "salvoEm": 1795786147236
 }
